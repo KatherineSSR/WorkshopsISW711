@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursos</title>
+  <script>
+    // crear curso nuevo
+    function createCourse() {
+      const name = document.getElementById('courseName').value;
+      const credits = document.getElementById('courseCredits').value;
+
+      fetch('http://localhost:3000/course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, credits: parseInt(credits) })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert('Curso creado: ' + data.name);
+        clearFields();
+        loadCourses(); 
+      });
+    }
+
+    // limpiar los campos
+    function clearFields() {
+      document.getElementById('courseName').value = '';
+      document.getElementById('courseCredits').value = '';
+    }
+
+    // cargar todos los cursos
+    function loadCourses() {
+      fetch('http://localhost:3000/course')
+      .then(response => response.json())
+      .then(data => {
+        let html = '';
+        data.forEach(course => {
+          html += '<tr><td>' + course._id + '</td><td>' + course.name + '</td><td>' + course.credits + '</td></tr>';
+        });
+        document.getElementById('tableBody').innerHTML = html;
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <h3>Agregar Curso</h3>
+  Nombre: <input type="text" id="courseName"><br>
+  Créditos: <input type="number" id="courseCredits" min="1" value="1"><br>
+  <button onclick="createCourse()">Agregar</button>
+  <button onclick="clearFields()">Limpiar</button>
+  
+  <hr>
+  
+  <h3>Cursos:</h3>
+  <button onclick="loadCourses()">Actualizar</button>
+  <table border="1">
+    <tr><th>ID</th><th>Nombre</th><th>Créditos</th></tr>
+    <tbody id="tableBody"></tbody>
+  </table>
+  
+  <script>
+    loadCourses(); 
+  </script>
+</body>
+</html>
