@@ -37,7 +37,10 @@ app.use(express.static('client'));
 app.post('/course', async (req, res) => {
     const course = new Course({
         name: req.body.name,
-        credits: req.body.credits
+        credits: req.body.credits,
+        code: req.body.code,
+        description: req.body.description,
+        teacherId: req.body.teacherId
     })
 
     try {
@@ -72,7 +75,10 @@ app.put('/course', async (req, res) => {
             req.query.id,
             {
                 name: req.body.name,
-                credits: req.body.credits
+                credits: req.body.credits,
+                code: req.body.code,
+                description: req.body.description,
+                teacherId: req.body.teacherId
             },
             { new: true }
         );
