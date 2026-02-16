@@ -15,7 +15,7 @@ const teacherSchema = new mongoose.Schema({
     },
     cedula: {
         required: true,
-        type: Number
+        type: String
     }
 })
 
