@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursos y Profesores</title>
+  <script>
+    
+    // crear o actualizar curso
+    async function saveCourse() {
+      const id = document.getElementById('courseId').value;
+      const name = document.getElementById('courseName').value;
+      const code = document.getElementById('courseCode').value;
+      const description = document.getElementById('courseDescription').value;
+      const teacherId = document.getElementById('courseTeacherId').value;
+
+      const method = id ? 'PUT' : 'POST'; //si hay id actualiza, sino crea
+      const url = id ? `http://localhost:3000/course?id=${id}` : 'http://localhost:3000/course'; //si tiene id la incluye para el put, sino no.
+
+      try {
+        const response = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name, code: code, description: description, teacherId: teacherId })
+        });
+        
+        if (!response.ok) throw new Error('Error al guardar el curso');
+        
+        const data = await response.json();
+        alert(id ? 'Curso actualizado exitosamente' : 'Curso creado: ' + data.name);
+        clearCourseFields();
+        loadCourses();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // editar curso
+    async function editCourse(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/course?id=${id}`);
+        if (!response.ok) throw new Error();
+        
+        const course = await response.json();
+        document.getElementById('courseId').value = course._id;
+        document.getElementById('courseName').value = course.name;
+        document.getElementById('courseCode').value = course.code;
+        document.getElementById('courseDescription').value = course.description;
+        document.getElementById('courseTeacherId').value = course.teacherId;
+      } catch (error) {
+        alert('Error al cargar el curso');
+      }
+    }
+
+    // eliminar curso
+    async function deleteCourse(id) {
+      if (!confirm('¿Seguro que desea eliminar este curso?')) return;
+      
+      try {
+        const response = await fetch(`http://localhost:3000/course?id=${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error();
+        
+        alert('Curso eliminado exitosamente');
+        loadCourses();
+      } catch (error) {
+        alert('Error al eliminar el curso');
+      }
+    }
+
+    // limpiar los campos de curso
+    function clearCourseFields() {
+      document.getElementById('courseId').value = '';
+      document.getElementById('courseName').value = '';
+      document.getElementById('courseCode').value = '';
+      document.getElementById('courseDescription').value = '';
+      document.getElementById('courseTeacherId').value = '';
+    }
+
+    // cargar todos los cursos
+    async function loadCourses() {
+      try {
+        const response = await fetch('http://localhost:3000/course');
+        if (!response.ok) throw new Error();
+        
+        const data = await response.json();
+        let html = '';
+        data.forEach(course => {
+          // Busca el nombre del profesor
+          const teacher = teachers.find(t => t._id === course.teacherId);
+          const teacherName = teacher ? teacher.name + ' ' + teacher.lastname : 'N/A';
+          
+          html += '<tr><td>' + course.name + '</td><td>' + course.code + '</td><td>' + course.description + '</td><td>' + teacherName + '</td>';
+          html += '<td><button onclick="editCourse(\'' + course._id + '\')">Editar</button> ';
+          html += '<button onclick="deleteCourse(\'' + course._id + '\')">Eliminar</button></td></tr>';
+        });
+        document.getElementById('courseTableBody').innerHTML = html;
+      } catch (error) {
+        alert('Error al cargar cursos');
+      }
+    }
+
+
+    //seccion de los profesores
+    
+    let teachers = [];
+
+    // crear o actualizar profesor
+    async function saveTeacher() {
+      const id = document.getElementById('teacherId').value;
+      const name = document.getElementById('teacherName').value;
+      const lastname = document.getElementById('teacherLastname').value;
+      const cedula = document.getElementById('teacherCedula').value;
+      const age = parseInt(document.getElementById('teacherAge').value);
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `http://localhost:3000/teacher?id=${id}` : 'http://localhost:3000/teacher';
+
+      try {
+        const response = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name, lastname: lastname, cedula: cedula, age: age })
+        });
+        
+        if (!response.ok) throw new Error('Error al guardar el profesor');
+        
+        const data = await response.json();
+        alert(id ? 'Profesor actualizado exitosamente' : 'Profesor creado: ' + data.name);
+        clearTeacherFields();
+        loadTeachers();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // editar profesor
+    async function editTeacher(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/teacher?id=${id}`);
+        if (!response.ok) throw new Error();
+        
+        const teacher = await response.json();
+        document.getElementById('teacherId').value = teacher._id;
+        document.getElementById('teacherName').value = teacher.name;
+        document.getElementById('teacherLastname').value = teacher.lastname;
+        document.getElementById('teacherCedula').value = teacher.cedula;
+        document.getElementById('teacherAge').value = teacher.age;
+      } catch (error) {
+        alert('Error al cargar el profesor');
+      }
+    }
+
+    // eliminar profesor
+    async function deleteTeacher(id) {
+      if (!confirm('¿Seguro que desea eliminar este profesor?')) return;
+      
+      try {
+        const response = await fetch(`http://localhost:3000/teacher?id=${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error();
+        
+        alert('Profesor eliminado exitosamente');
+        loadTeachers();
+        loadCourses();
+      } catch (error) {
+        alert('Error al eliminar el profesor');
+      }
+    }
+
+    // limpiar los campos de profesor
+    function clearTeacherFields() {
+      document.getElementById('teacherId').value = '';
+      document.getElementById('teacherName').value = '';
+      document.getElementById('teacherLastname').value = '';
+      document.getElementById('teacherCedula').value = '';
+      document.getElementById('teacherAge').value = '';
+    }
+
+    // cargar todos los profesores
+    async function loadTeachers() {
+      try {
+        const response = await fetch('http://localhost:3000/teacher');
+        if (!response.ok) throw new Error();
+        
+        teachers = await response.json();
+        let html = '';
+        teachers.forEach(teacher => {
+          html += '<tr><td>' + teacher.name + '</td><td>' + teacher.lastname + '</td><td>' + teacher.cedula + '</td><td>' + teacher.age + '</td>';
+          html += '<td><button onclick="editTeacher(\'' + teacher._id + '\')">Editar</button> ';
+          html += '<button onclick="deleteTeacher(\'' + teacher._id + '\')">Eliminar</button></td></tr>';
+        });
+        document.getElementById('teacherTableBody').innerHTML = html;
+        updateTeacherDropdown();
+      } catch (error) {
+        alert('Error al cargar profesores');
+      }
+    }
+
+    // actualizar dropdown de profesores
+    function updateTeacherDropdown() {
+      const select = document.getElementById('courseTeacherId');
+      select.innerHTML = '<option value="">Seleccione un profesor</option>';
+      teachers.forEach(teacher => {
+        select.innerHTML += '<option value="' + teacher._id + '">' + teacher.name + ' ' + teacher.lastname + '</option>';
+      });
+    }
+
+    // Cargar datos al iniciar
+    window.onload = function() {
+      loadTeachers();
+      loadCourses();
+    };
+  </script>
+</head>
+
+<body>
+  <h1>Sistema de Gestión</h1>
+
+  <h2>Profesores</h2>
+  <h3>Agregar/Editar Profesor</h3>
+  <input type="hidden" id="teacherId">
+
+  Nombre: <input type="text" id="teacherName"><br>
+  Apellidos: <input type="text" id="teacherLastname"><br>
+  Cédula: <input type="text" id="teacherCedula"><br>
+  Edad: <input type="number" id="teacherAge" min="18" max="100"><br>
+
+  <button onclick="saveTeacher()">Guardar</button>
+  <button onclick="clearTeacherFields()">Limpiar</button>
+  
+  <h3>Profesores:</h3>
+  <button onclick="loadTeachers()">Actualizar</button>
+  <table border="1">
+    <tr><th>Nombre</th><th>Apellidos</th><th>Cédula</th><th>Edad</th><th>Acciones</th></tr>
+    <tbody id="teacherTableBody"></tbody>
+  </table>
+  
+  <hr><hr>
+  
+  <h2>Cursos</h2>
+  <h3>Agregar/Editar Curso</h3>
+  <input type="hidden" id="courseId">
+
+  Nombre: <input type="text" id="courseName"><br>
+  Código: <input type="text" id="courseCode"><br>
+  Descripción: <input type="text" id="courseDescription"><br>
+  Profesor: <select id="courseTeacherId">
+    <option value="">Seleccione un profesor</option>
+  </select><br>
+
+  <button onclick="saveCourse()">Guardar</button>
+  <button onclick="clearCourseFields()">Limpiar</button>
+  
+  <h3>Cursos:</h3>
+  <button onclick="loadCourses()">Actualizar</button>
+  <table border="1">
+    <tr><th>Nombre</th><th>Código</th><th>Descripción</th><th>Profesor</th><th>Acciones</th></tr>
+    <tbody id="courseTableBody"></tbody>
+  </table>
+</body>
+</html>
