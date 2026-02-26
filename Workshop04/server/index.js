@@ -3,11 +3,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { authenticateToken, generateToken, register } = require('./Controllers/auth.js');
 const mongoose = require('mongoose');
 
-// rutas de cursos y profes
-const courseRoutes = require('./routes/courseRoutes');
-const teacherRoutes = require('./routes/teacherRoutes');
 
 const mongoString = process.env.DATABASE_URL;
 mongoose.connect(mongoString);
@@ -26,18 +24,18 @@ database.once('connected', () => {
 const app = express();
 
 //middlewares
-app.use(bodyParser.json()); //convierte las peticiones en json
-app.use(cors({    //para permitirle a mi cliente (frontend) hacer peticiones
+app.use(bodyParser.json());
+app.use(cors({
   domains: '*',
-  methods: '*'
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
-//path de node ayuda a trabajar con rutas de archivos
-const path = require('path'); 
-app.use(express.static(path.join(__dirname, '../client'))); //dirname: el directorio actual
+// auth routes
+app.post('/auth/register', register);
+app.post('/auth/token', generateToken);
 
-//Aqui se le dice al servidor que todas las rutas definidas en courseRoutes se prefijan con /course y teacherRoutes con /teacher
-app.use('/course', courseRoutes);
-app.use('/teacher', teacherRoutes);
+//routes
+app.use('/api', authenticateToken, require('./routes/courseRoutes'));
+app.use('/api', authenticateToken, require('./routes/teacherRoutes'));
 
 app.listen(process.env.PORT, () => console.log(`Escuchando el puerto ${process.env.PORT}!`))
