@@ -20,8 +20,13 @@ database.once('connected', () => {
     console.log('Database Connected');
 });
 
-//instancia de express: representa mi servidor web pra: configurar rutas, middlewares, servir achivos estaticos e iniciar el servidor
+//instancia de express: representa mi servidor web pra: configurar rutas, middlewares, servir archivos estaticos e iniciar el servidor
+const path = require('path');
 const app = express();
+
+
+// Servir archivos estáticos de la carpeta client
+app.use(express.static(path.join(__dirname, '../client')));
 
 //middlewares
 app.use(bodyParser.json());
