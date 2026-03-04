@@ -10,14 +10,14 @@ const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ token });
+    const user = await User.findOne({ token }); //devuelve el objeto completo de user que contiene ese token, lo que devuelve no es un token
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid or expired token' });
     }
 
     req.user = user;
-    next();
+    next(); //continua ejecutando lo que la ruta queria hacer
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Error authenticating token' });
@@ -27,7 +27,7 @@ const authenticateToken = async (req, res, next) => {
 
 //endpoint de registro
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password } = req.body; //esta declarando variables al mismo tiempo pero en formato json para asignarselas al body del request
 
   if (!email || !password) {
     return res.status(400).json({ message: 'Se necesitan email y contraseña' });
@@ -50,7 +50,7 @@ const register = async (req, res) => {
   }
 };
 
-
+//este tipo de token debe ir siempre en la base de datos, los jwt no es necesasrio pero los demas si 
 const generateToken = async (req, res) => {
   const { email, password } = req.body;
 
@@ -76,7 +76,7 @@ const generateToken = async (req, res) => {
     user.token = token;
     await user.save();
 
-    return res.status(201).json({ token: user.token });
+    return res.status(201).json({ token: user.token }); //devuelve el objeto json con el token generado, lo que devuelve no es un token, sino el objeto json con el token generado
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Error generating token' });
